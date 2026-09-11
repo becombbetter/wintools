@@ -1,0 +1,26 @@
+<Window x:Class="WinCapture.RecordingControlWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="正在录屏" Width="330" Height="86" ResizeMode="NoResize" WindowStyle="None"
+        Topmost="True" ShowInTaskbar="False" WindowStartupLocation="Manual" Background="Transparent"
+        AllowsTransparency="True">
+    <Border Background="#F5161F22" BorderBrush="#455258" BorderThickness="1" CornerRadius="7" Padding="12">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Ellipse Width="10" Height="10" Fill="{StaticResource SignalBrush}" VerticalAlignment="Center" />
+            <StackPanel Grid.Column="1" Margin="10,0,12,0" VerticalAlignment="Center">
+                <TextBlock x:Name="TimeText" Text="00:00:00" Foreground="White" FontSize="18" FontWeight="SemiBold" />
+                <TextBlock x:Name="StateText" Text="正在录制" Foreground="#BFC9CC" FontSize="11" />
+            </StackPanel>
+            <Button x:Name="PauseButton" Grid.Column="2" Click="PauseButton_Click" ToolTip="暂停或继续"
+                    Foreground="White" Background="#263236" BorderBrush="#536166" Padding="11,7">Ⅱ</Button>
+            <Button Grid.Column="3" Click="StopButton_Click" ToolTip="停止录屏"
+                    Foreground="White" Background="#E95645" BorderBrush="#E95645" Margin="7,0,0,0" Padding="11,7">■</Button>
+        </Grid>
+    </Border>
+</Window>

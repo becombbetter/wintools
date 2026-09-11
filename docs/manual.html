@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WinCapture 使用手册</title>
+  <style>
+    :root {
+      --ink: #172127;
+      --muted: #68757c;
+      --paper: #f4f6f5;
+      --panel: #ffffff;
+      --line: #dce2e0;
+      --accent: #0b7a75;
+      --signal: #e95645;
+      --blue: #3c7bbe;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Microsoft YaHei UI", "PingFang SC", sans-serif;
+      line-height: 1.72;
+    }
+    header {
+      color: white;
+      background: #172127;
+      border-bottom: 4px solid var(--accent);
+    }
+    .hero {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 54px 0 48px;
+    }
+    .brand { margin: 0; font-size: clamp(34px, 6vw, 58px); font-weight: 700; letter-spacing: 0; }
+    .tagline { margin: 8px 0 0; color: #b9c8cb; font-size: 18px; }
+    .layout {
+      width: min(1120px, calc(100% - 40px));
+      margin: 32px auto 64px;
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 34px;
+      align-items: start;
+    }
+    nav { position: sticky; top: 20px; border-left: 2px solid var(--line); padding-left: 18px; }
+    nav a { display: block; color: var(--muted); text-decoration: none; padding: 6px 0; }
+    nav a:hover { color: var(--accent); }
+    main { min-width: 0; }
+    section { padding: 4px 0 34px; border-bottom: 1px solid var(--line); margin-bottom: 30px; }
+    h2 { margin: 0 0 14px; font-size: 25px; letter-spacing: 0; }
+    h3 { margin: 24px 0 8px; font-size: 17px; }
+    p { margin: 8px 0; }
+    ul, ol { padding-left: 22px; }
+    li { margin: 5px 0; }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); }
+    th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line); }
+    th { background: #eaf2f1; color: #365d59; }
+    kbd {
+      display: inline-block;
+      min-width: 28px;
+      padding: 2px 7px;
+      color: #243137;
+      background: white;
+      border: 1px solid #cbd3d1;
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      font: 12px/1.6 Consolas, monospace;
+      text-align: center;
+    }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+    .step { background: white; border: 1px solid var(--line); border-radius: 6px; padding: 16px; }
+    .step b { display: block; color: var(--accent); font-size: 20px; margin-bottom: 4px; }
+    .note { border-left: 4px solid var(--blue); background: #edf3f9; padding: 12px 16px; margin: 16px 0; }
+    .warn { border-left-color: var(--signal); background: #fff0ed; }
+    code { color: #23615d; background: #e5eeec; padding: 2px 5px; border-radius: 3px; }
+    footer { color: var(--muted); text-align: center; padding: 28px; border-top: 1px solid var(--line); }
+    @media (max-width: 760px) {
+      .layout { grid-template-columns: 1fr; }
+      nav { position: static; display: grid; grid-template-columns: repeat(2, 1fr); }
+      .steps { grid-template-columns: 1fr; }
+      table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hero">
+      <h1 class="brand">WinCapture</h1>
+      <p class="tagline">Windows 11 x64 截图、长截图与录屏工具使用手册</p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav aria-label="章节导航">
+      <a href="#start">快速开始</a>
+      <a href="#capture">截图</a>
+      <a href="#edit">编辑与马赛克</a>
+      <a href="#longshot">长截图</a>
+      <a href="#record">录屏</a>
+      <a href="#ocr">OCR 与贴图</a>
+      <a href="#settings">设置与文件</a>
+      <a href="#limits">常见问题</a>
+    </nav>
+
+    <main>
+      <section id="start">
+        <h2>快速开始</h2>
+        <div class="steps">
+          <div class="step"><b>01</b>运行 <code>WinCapture.exe</code></div>
+          <div class="step"><b>02</b>点击主界面功能或使用快捷键</div>
+          <div class="step"><b>03</b>编辑后复制、保存或置顶</div>
+        </div>
+        <p class="note">关闭主窗口不会退出程序。WinCapture 会继续在系统托盘运行；右键托盘图标可彻底退出。</p>
+      </section>
+
+      <section id="capture">
+        <h2>截图</h2>
+        <table>
+          <thead><tr><th>功能</th><th>快捷键</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>区域截图</td><td><kbd>PrintScreen</kbd></td><td>拖动鼠标选择任意区域</td></tr>
+            <tr><td>窗口截图</td><td><kbd>Alt</kbd> + <kbd>PrintScreen</kbd></td><td>移动鼠标高亮窗口，单击确认</td></tr>
+            <tr><td>全屏截图</td><td><kbd>Shift</kbd> + <kbd>PrintScreen</kbd></td><td>截取全部显示器</td></tr>
+            <tr><td>长截图</td><td><kbd>Ctrl</kbd> + <kbd>PrintScreen</kbd></td><td>选择滚动内容区域</td></tr>
+            <tr><td>录屏</td><td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></td><td>打开录屏设置；再次按下可停止</td></tr>
+          </tbody>
+        </table>
+        <p>选择截图区域时按 <kbd>Esc</kbd> 或单击鼠标右键可以取消。延时截图可在设置中选择 3、5 或 10 秒。</p>
+      </section>
+
+      <section id="edit">
+        <h2>编辑与马赛克</h2>
+        <p>截图完成后自动进入编辑器。工具栏提供画笔、高亮、箭头、矩形、椭圆、文字、编号、马赛克、模糊、遮挡和裁剪。</p>
+        <ul>
+          <li>马赛克、模糊、遮挡和裁剪：按住鼠标拖出处理区域。</li>
+          <li>文字：选择文字工具后，在图片中单击并输入内容。</li>
+          <li>编号：每次单击生成递增编号，适合制作操作说明。</li>
+          <li>撤销与重做：使用编辑器右上角的弯箭头按钮。</li>
+          <li>保存：支持 PNG 和 JPEG；PNG 更适合界面截图。</li>
+        </ul>
+      </section>
+
+      <section id="longshot">
+        <h2>长截图</h2>
+        <ol>
+          <li>把页面滚动到要截取的起点。</li>
+          <li>启动长截图并框选稳定的内容区域，不要包含滚动条外的动态悬浮控件。</li>
+          <li>确认后不要移动鼠标，程序会自动滚动、匹配并拼接。</li>
+          <li>到达底部或无法继续匹配时，结果会在编辑器中打开。</li>
+        </ol>
+        <p class="note">动态视频、持续动画、透明悬浮按钮和固定吸顶内容可能降低拼接成功率。遇到错位时缩小选择范围后重试。</p>
+      </section>
+
+      <section id="record">
+        <h2>录屏</h2>
+        <p>录制范围支持主显示器、选择区域和选择窗口。视频采用 H.264 编码并输出 MP4。</p>
+        <ul>
+          <li>系统声音与麦克风可独立启用。</li>
+          <li>可选择 24、30 或 60 FPS，以及 4、8 或 16 Mbps 码率。</li>
+          <li>录屏控制条不会出现在支持排除捕获的 Windows 11 画面中。</li>
+          <li>暂停期间不计入录制时长，单击方形按钮完成并保存。</li>
+        </ul>
+        <p class="warn note">Windows 11 N 版需要安装 Media Feature Pack。首次录屏若提示缺少运行库，请安装 Microsoft Visual C++ 2015-2022 Redistributable x64。</p>
+      </section>
+
+      <section id="ocr">
+        <h2>OCR 与置顶贴图</h2>
+        <p>在编辑器中单击“OCR 识别”，识别结果会显示在独立窗口并自动复制到剪贴板。识别语言取决于 Windows 已安装的语言包。</p>
+        <p>“置顶贴图”会把当前截图保持在其他窗口上方。拖动图片可移动，右上角按钮可切换透明度或关闭。</p>
+      </section>
+
+      <section id="settings">
+        <h2>设置与文件</h2>
+        <p>截图默认保存在“图片\WinCapture”，录屏默认保存在“视频\WinCapture”。保存目录、延时截图、声音、鼠标和开机启动均可在设置中修改。</p>
+        <p>主界面的最近文件列表显示最新截图和录屏，双击即可打开。设置文件位于 <code>%LocalAppData%\WinCapture\settings.json</code>。</p>
+      </section>
+
+      <section id="limits">
+        <h2>常见问题</h2>
+        <h3>管理员窗口无法截图</h3>
+        <p>普通权限程序不能稳定捕获更高权限窗口。退出 WinCapture 后，以管理员身份重新运行。</p>
+        <h3>视频或安全界面显示黑色</h3>
+        <p>DRM 视频、Windows 安全桌面和主动禁止捕获的窗口无法录制，这是系统安全限制。</p>
+        <h3>快捷键没有响应</h3>
+        <p>快捷键可能被其他程序注册。仍可从主界面或托盘菜单启动对应功能。</p>
+        <h3>多显示器区域录屏</h3>
+        <p>区域录屏必须位于同一显示器内。跨显示器截图不受此限制。</p>
+      </section>
+    </main>
+  </div>
+
+  <footer>WinCapture 1.0 · 本地处理 · Windows 11 x64</footer>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<Window x:Class="WinCapture.PinWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="置顶贴图" WindowStyle="None" ResizeMode="CanResizeWithGrip" Topmost="True"
+        Width="520" Height="360" MinWidth="120" MinHeight="90" ShowInTaskbar="False"
+        Background="#111718" AllowsTransparency="False">
+    <Grid>
+        <Image x:Name="PinnedImage" Stretch="Uniform" MouseLeftButtonDown="PinnedImage_MouseLeftButtonDown" />
+        <Border VerticalAlignment="Top" HorizontalAlignment="Right" Margin="8" Background="#D9161F22" CornerRadius="4">
+            <StackPanel Orientation="Horizontal">
+                <Button Click="OpacityButton_Click" ToolTip="切换透明度" Padding="8,4" Background="Transparent" BorderThickness="0" Foreground="White">◐</Button>
+                <Button Click="CloseButton_Click" ToolTip="关闭贴图" Padding="8,4" Background="Transparent" BorderThickness="0" Foreground="White">×</Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

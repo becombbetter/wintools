@@ -1,0 +1,51 @@
+<Window x:Class="WinCapture.EditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WinCapture 编辑器" Width="1180" Height="760" MinWidth="820" MinHeight="540"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="14,10">
+            <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                    <Button Tag="Pen" Click="ToolButton_Click" ToolTip="画笔">✎ 画笔</Button>
+                    <Button Tag="Highlighter" Click="ToolButton_Click" ToolTip="高亮" Margin="6,0,0,0">▰ 高亮</Button>
+                    <Button Tag="Arrow" Click="ToolButton_Click" ToolTip="箭头" Margin="6,0,0,0">➜ 箭头</Button>
+                    <Button Tag="Rectangle" Click="ToolButton_Click" ToolTip="矩形" Margin="6,0,0,0">□ 矩形</Button>
+                    <Button Tag="Ellipse" Click="ToolButton_Click" ToolTip="椭圆" Margin="6,0,0,0">○ 椭圆</Button>
+                    <Button Tag="Text" Click="ToolButton_Click" ToolTip="文字" Margin="6,0,0,0">T 文字</Button>
+                    <Button Tag="Number" Click="ToolButton_Click" ToolTip="编号" Margin="6,0,0,0">① 编号</Button>
+                    <Button Tag="Mosaic" Click="ToolButton_Click" ToolTip="马赛克" Margin="6,0,0,0">▦ 马赛克</Button>
+                    <Button Tag="Blur" Click="ToolButton_Click" ToolTip="模糊" Margin="6,0,0,0">◫ 模糊</Button>
+                    <Button Tag="Redact" Click="ToolButton_Click" ToolTip="遮挡" Margin="6,0,0,0">■ 遮挡</Button>
+                    <Button Tag="Crop" Click="ToolButton_Click" ToolTip="裁剪" Margin="6,0,0,0">⌗ 裁剪</Button>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="16,0,0,0">
+                    <Button x:Name="UndoButton" Click="UndoButton_Click" ToolTip="撤销">↶</Button>
+                    <Button x:Name="RedoButton" Click="RedoButton_Click" ToolTip="重做" Margin="6,0,0,0">↷</Button>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Row="1" Margin="18" Background="#D9DEDC" BorderBrush="#C4CCCA" BorderThickness="1" CornerRadius="4">
+            <Grid x:Name="EditorHost" Margin="12" Background="#BBC2C0" />
+        </Border>
+
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Padding="14,10">
+            <DockPanel>
+                <TextBlock x:Name="StatusText" DockPanel.Dock="Left" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Click="OcrButton_Click">OCR 识别</Button>
+                    <Button Click="PinButton_Click" Margin="6,0,0,0">置顶贴图</Button>
+                    <Button Click="CopyButton_Click" Margin="6,0,0,0">复制</Button>
+                    <Button Style="{StaticResource PrimaryButton}" Click="SaveButton_Click" Margin="6,0,0,0">保存</Button>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>
