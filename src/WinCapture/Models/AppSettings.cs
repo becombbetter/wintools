@@ -17,6 +17,9 @@ public sealed class AppSettings
     public int FrameRate { get; set; } = 30;
     public int VideoBitrateMbps { get; set; } = 8;
     public int LongShotMaxFrames { get; set; } = 30;
+
+    /// <summary>长截图默认由用户滚动；开启后由程序代替用户发滚轮。</summary>
+    public bool LongShotAutoScroll { get; set; }
     public bool StartWithWindows { get; set; }
 }
 

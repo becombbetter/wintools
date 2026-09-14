@@ -54,13 +54,33 @@ public partial class MainWindow : Window
 
         var icon = new Forms.NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = LoadAppIcon(),
             Text = "WinCapture",
             Visible = true,
             ContextMenuStrip = menu
         };
         icon.DoubleClick += (_, _) => Dispatcher.Invoke(ShowMainWindow);
         return icon;
+    }
+
+    /// <summary>托盘图标用程序内嵌的 app.ico；万一取不到就退回系统默认图标，避免启动失败。</summary>
+    private static System.Drawing.Icon LoadAppIcon()
+    {
+        try
+        {
+            var resource = System.Windows.Application.GetResourceStream(
+                new Uri("pack://application:,,,/app.ico"));
+            if (resource is not null)
+            {
+                using var stream = resource.Stream;
+                return new System.Drawing.Icon(stream, new System.Drawing.Size(32, 32));
+            }
+        }
+        catch
+        {
+        }
+
+        return SystemIcons.Application;
     }
 
     private void MainWindow_SourceInitialized(object? sender, EventArgs e)
@@ -144,9 +164,12 @@ public partial class MainWindow : Window
             return;
         }
 
+        var auto = App.Settings.LongShotAutoScroll;
         var confirmation = WpfMessageBox.Show(
             this,
-            "选择可滚动内容区域后，WinCapture 会把鼠标移入区域并自动向下滚动。请先把页面停在长截图起点。",
+            auto
+                ? "选择可滚动内容区域后，WinCapture 会把鼠标移入区域、自动向下滚动并拼接。过程中可按 Esc 取消。请先把页面停在长截图起点。"
+                : "选择可滚动内容区域后会出现悬浮面板；用滚轮滚动目标内容，WinCapture 会实时拼接。点『完成』或按 Enter 结束，Esc 取消。请先把页面停在长截图起点。",
             "开始长截图",
             MessageBoxButton.OKCancel,
             MessageBoxImage.Information);
@@ -156,6 +179,8 @@ public partial class MainWindow : Window
         }
 
         _busy = true;
+        LongShotSession? session = null;
+        LongShotOverlayWindow? overlay = null;
         try
         {
             Hide();
@@ -167,23 +192,34 @@ public partial class MainWindow : Window
                 return;
             }
 
-            await Task.Delay(350);
-            var progress = new Progress<LongShotProgress>(value =>
-            {
-                StatusText.Text = $"{value.Message}，当前高度 {value.AppendedHeight:N0} px";
-            });
-            var bitmap = await LongShotService.CaptureAsync(
-                selection.Bounds,
-                App.Settings.LongShotMaxFrames,
-                progress);
-            var capturedWidth = bitmap.Width;
-            var capturedHeight = bitmap.Height;
+            await Task.Delay(220);
+            session = new LongShotSession(auto ? LongShotMode.Auto : LongShotMode.Manual);
+            overlay = new LongShotOverlayWindow(session, selection.Bounds);
+            overlay.Show();
 
+            var outcome = await LongShotService.CaptureAsync(
+                selection.Bounds,
+                session,
+                App.Settings.LongShotMaxFrames);
+
+            overlay.Close();
+            overlay = null;
+
+            if (outcome.Image is null)
+            {
+                ShowMainWindow();
+                StatusText.Text = outcome.Message;
+                return;
+            }
+
+            var bitmap = outcome.Image;
             ShowMainWindow();
-            var editor = new EditorWindow(bitmap);
-            editor.Closed += (_, _) => RefreshHistory();
-            editor.Show();
-            StatusText.Text = $"长截图完成：{capturedWidth} × {capturedHeight} px";
+            // 长截图动辄上万像素，先进预览窗口看整体（带缩放百分比），
+            // 需要标注再从这里进编辑器。
+            var preview = new LongShotPreviewWindow(bitmap, outcome.Message);
+            preview.Closed += (_, _) => RefreshHistory();
+            preview.Show();
+            StatusText.Text = outcome.Message;
         }
         catch (Exception exception)
         {
@@ -192,6 +228,8 @@ public partial class MainWindow : Window
         }
         finally
         {
+            overlay?.Close();
+            session?.Dispose();
             _busy = false;
         }
     }
@@ -311,14 +349,52 @@ public partial class MainWindow : Window
 
     private void ManualButton_Click(object sender, RoutedEventArgs e)
     {
-        var manualPath = Path.Combine(AppContext.BaseDirectory, "使用手册.html");
-        if (File.Exists(manualPath))
+        var manualPath = EnsureManualFile();
+        if (manualPath is not null)
         {
             OpenPath(manualPath);
         }
         else
         {
-            WpfMessageBox.Show(this, "未找到使用手册.html。", "使用手册", MessageBoxButton.OK, MessageBoxImage.Warning);
+            WpfMessageBox.Show(this, "未找到使用手册。", "使用手册", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    /// <summary>
+    /// 使用手册已内嵌进程序集（单文件发布时不带外部文件）。
+    /// 优先使用程序目录下的同名文件（文件夹发布时的最新版本），
+    /// 否则把内嵌资源释放到用户目录再打开。
+    /// </summary>
+    private static string? EnsureManualFile()
+    {
+        var beside = Path.Combine(AppContext.BaseDirectory, "使用手册.html");
+        if (File.Exists(beside))
+        {
+            return beside;
+        }
+
+        var directory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "WinCapture");
+        var target = Path.Combine(directory, "使用手册.html");
+
+        try
+        {
+            using var stream = typeof(MainWindow).Assembly
+                .GetManifestResourceStream("WinCapture.Resources.manual.html");
+            if (stream is null)
+            {
+                return File.Exists(target) ? target : null;
+            }
+
+            Directory.CreateDirectory(directory);
+            using var file = File.Create(target);
+            stream.CopyTo(file);
+            return target;
+        }
+        catch
+        {
+            return File.Exists(target) ? target : null;
         }
     }
 

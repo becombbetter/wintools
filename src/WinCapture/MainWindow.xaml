@@ -28,8 +28,8 @@
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Click="FullCaptureButton_Click" ToolTip="截取全部显示器" Foreground="White" Background="#253238" BorderBrush="#425258">▣ 全屏</Button>
-                    <Button Click="ManualButton_Click" ToolTip="使用手册" Foreground="White" Background="#253238" BorderBrush="#425258" Margin="8,0,0,0">? 手册</Button>
                     <Button Click="SettingsButton_Click" ToolTip="设置" Foreground="White" Background="#253238" BorderBrush="#425258" Margin="8,0,0,0">⚙ 设置</Button>
+                    <Button Click="ManualButton_Click" ToolTip="使用手册（README）" Foreground="White" Background="#253238" BorderBrush="#425258" Margin="8,0,0,0">📖 README</Button>
                 </StackPanel>
             </DockPanel>
         </Border>

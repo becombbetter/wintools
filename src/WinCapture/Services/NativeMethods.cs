@@ -11,6 +11,10 @@ internal static class NativeMethods
     public const uint WdaExcludeFromCapture = 0x00000011;
     public const uint InputMouse = 0;
     public const uint MouseEventWheel = 0x0800;
+    public const uint SwpNoSize = 0x0001;
+    public const uint SwpNoActivate = 0x0010;
+
+    public static readonly nint HwndTopMost = new(-1);
 
     [DllImport("user32.dll")]
     public static extern bool SetProcessDpiAwarenessContext(nint value);
@@ -50,6 +54,22 @@ internal static class NativeMethods
 
     [DllImport("user32.dll")]
     public static extern bool SetCursorPos(int x, int y);
+
+    [DllImport("user32.dll")]
+    public static extern bool GetCursorPos(out NativePoint point);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetForegroundWindow(nint window);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetWindowPos(
+        nint window,
+        nint insertAfter,
+        int x,
+        int y,
+        int width,
+        int height,
+        uint flags);
 
     [DllImport("user32.dll")]
     public static extern uint SendInput(uint count, Input[] inputs, int size);
@@ -113,6 +133,24 @@ internal static class NativeMethods
         }, nint.Zero);
 
         return (foundHandle, foundBounds);
+    }
+
+    /// <summary>激活指定坐标下最上层的窗口，保证滚轮事件发给正确的目标。</summary>
+    public static void ActivateWindowAt(int x, int y)
+    {
+        var hit = FindWindowAtPoint(new System.Drawing.Point(x, y), nint.Zero);
+        if (hit.Handle != nint.Zero)
+        {
+            SetForegroundWindow(hit.Handle);
+        }
+    }
+
+    public static bool TryGetCursorPosition(out NativePoint point) => GetCursorPos(out point);
+
+    /// <summary>用物理像素摆放窗口，避免多显示器缩放下 WPF 设备无关单位的换算误差。</summary>
+    public static void MoveWindow(nint window, int x, int y)
+    {
+        SetWindowPos(window, HwndTopMost, x, y, 0, 0, SwpNoSize | SwpNoActivate);
     }
 
     public static void SendMouseWheel(int delta)

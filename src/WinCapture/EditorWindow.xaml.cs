@@ -50,8 +50,16 @@ public partial class EditorWindow : Window
 
     private void CopyButton_Click(object sender, RoutedEventArgs e)
     {
-        System.Windows.Clipboard.SetImage(ScreenCaptureService.ToBitmapSource(_surface.Bitmap));
-        StatusText.Text = "已复制到剪贴板";
+        try
+        {
+            System.Windows.Clipboard.SetImage(ScreenCaptureService.ToBitmapSource(_surface.Bitmap));
+            StatusText.Text = "已复制到剪贴板";
+        }
+        catch (Exception exception)
+        {
+            // 剪贴板可能被其他程序占用，失败时提示而不是让程序崩掉
+            WpfMessageBox.Show(this, $"复制到剪贴板失败：{exception.Message}", "复制", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -70,20 +78,33 @@ public partial class EditorWindow : Window
             return;
         }
 
-        Directory.CreateDirectory(Path.GetDirectoryName(dialog.FileName)!);
-        var extension = Path.GetExtension(dialog.FileName);
-        if (extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+        try
         {
-            PdfExportService.Save(_surface.Bitmap, dialog.FileName);
+            var directory = Path.GetDirectoryName(dialog.FileName);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var extension = Path.GetExtension(dialog.FileName);
+            if (extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                PdfExportService.Save(_surface.Bitmap, dialog.FileName);
+            }
+            else
+            {
+                var format = extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
+                    ? ImageFormat.Jpeg
+                    : ImageFormat.Png;
+                _surface.Bitmap.Save(dialog.FileName, format);
+            }
+
+            StatusText.Text = $"已保存：{dialog.FileName}";
         }
-        else
+        catch (Exception exception)
         {
-            var format = extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
-                ? ImageFormat.Jpeg
-                : ImageFormat.Png;
-            _surface.Bitmap.Save(dialog.FileName, format);
+            WpfMessageBox.Show(this, $"保存失败：{exception.Message}", "保存截图", MessageBoxButton.OK, MessageBoxImage.Error);
         }
-        StatusText.Text = $"已保存：{dialog.FileName}";
     }
 
     private async void OcrButton_Click(object sender, RoutedEventArgs e)
@@ -98,10 +119,20 @@ public partial class EditorWindow : Window
                 return;
             }
 
-            System.Windows.Clipboard.SetText(text);
+            var copied = true;
+            try
+            {
+                System.Windows.Clipboard.SetText(text);
+            }
+            catch
+            {
+                // 剪贴板被占用时不影响查看识别结果
+                copied = false;
+            }
+
             var resultWindow = new OcrResultWindow(text) { Owner = this };
             resultWindow.ShowDialog();
-            StatusText.Text = "识别结果已复制到剪贴板";
+            StatusText.Text = copied ? "识别结果已复制到剪贴板" : "识别完成，但复制到剪贴板失败";
         }
         catch (Exception exception)
         {

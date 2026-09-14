@@ -2,6 +2,11 @@ namespace WinCapture.Services;
 
 public sealed class HistoryService
 {
+    private static readonly HashSet<string> SupportedExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".png", ".jpg", ".jpeg", ".mp4", ".pdf"
+    };
+
     private readonly AppSettings _settings;
 
     public HistoryService(AppSettings settings)
@@ -10,33 +15,60 @@ public sealed class HistoryService
         EnsureDirectories();
     }
 
+    /// <summary>
+    /// 创建保存目录。目录被清空或指向非法路径时不能抛异常，
+    /// 否则设置里留空会让整个程序在保存后崩溃。
+    /// </summary>
     public void EnsureDirectories()
     {
-        Directory.CreateDirectory(_settings.ImageDirectory);
-        Directory.CreateDirectory(_settings.VideoDirectory);
+        TryCreateDirectory(_settings.ImageDirectory);
+        TryCreateDirectory(_settings.VideoDirectory);
     }
 
     public IReadOnlyList<HistoryItem> GetRecent(int count = 30)
     {
         EnsureDirectories();
-        var supported = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".png", ".jpg", ".jpeg", ".mp4", ".pdf"
-        };
 
-        return new[] { _settings.ImageDirectory, _settings.VideoDirectory }
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Where(Directory.Exists)
-            .SelectMany(directory => Directory.EnumerateFiles(directory))
-            .Where(path => supported.Contains(Path.GetExtension(path)))
-            .Select(path => new FileInfo(path))
-            .OrderByDescending(file => file.CreationTime)
+        var items = new List<HistoryItem>();
+        foreach (var directory in ExistingDirectories())
+        {
+            List<string> files;
+            try
+            {
+                files = Directory.EnumerateFiles(directory).ToList();
+            }
+            catch
+            {
+                // 目录暂时不可访问（权限、网络盘掉线等）时跳过，不影响其他目录
+                continue;
+            }
+
+            foreach (var path in files)
+            {
+                if (!SupportedExtensions.Contains(Path.GetExtension(path)))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var file = new FileInfo(path);
+                    items.Add(new HistoryItem(
+                        file.FullName,
+                        file.Name,
+                        file.CreationTime,
+                        file.Extension.Equals(".mp4", StringComparison.OrdinalIgnoreCase) ? "录屏" : "截图"));
+                }
+                catch
+                {
+                    // 单个文件元数据异常时忽略该文件
+                }
+            }
+        }
+
+        return items
+            .OrderByDescending(item => item.CreatedAt)
             .Take(count)
-            .Select(file => new HistoryItem(
-                file.FullName,
-                file.Name,
-                file.CreationTime,
-                file.Extension.Equals(".mp4", StringComparison.OrdinalIgnoreCase) ? "录屏" : "截图"))
             .ToList();
     }
 
@@ -50,5 +82,35 @@ public sealed class HistoryService
     {
         EnsureDirectories();
         return Path.Combine(_settings.VideoDirectory, $"WinCapture_录屏_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
+    }
+
+    private IEnumerable<string> ExistingDirectories()
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var directory in new[] { _settings.ImageDirectory, _settings.VideoDirectory })
+        {
+            if (string.IsNullOrWhiteSpace(directory) || !seen.Add(directory) || !Directory.Exists(directory))
+            {
+                continue;
+            }
+
+            yield return directory;
+        }
+    }
+
+    private static void TryCreateDirectory(string? directory)
+    {
+        if (string.IsNullOrWhiteSpace(directory))
+        {
+            return;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(directory);
+        }
+        catch
+        {
+        }
     }
 }

@@ -11,25 +11,39 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
     <AssemblyName>WinCapture</AssemblyName>
     <RootNamespace>WinCapture</RootNamespace>
     <Version>1.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SatelliteResourceLanguages>zh-CN</SatelliteResourceLanguages>
+    <!-- 单文件发布时不要把 NuGet 包的 .pdb / .xml 文档一起拷出来，保证产物只有一个 exe -->
+    <CopyDebugSymbolFilesFromPackages>false</CopyDebugSymbolFilesFromPackages>
+    <CopyDocumentationFilesFromPackages>false</CopyDocumentationFilesFromPackages>
+    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="ScreenRecorderLib" Version="7.0.1" />
   </ItemGroup>
 
+  <!-- 使用手册与第三方声明内嵌进程序集，保证单文件发布时不依赖任何外部文件 -->
   <ItemGroup>
-    <Content Include="..\..\docs\manual.html" Link="使用手册.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Include="..\..\THIRD_PARTY_NOTICES.txt" Link="THIRD_PARTY_NOTICES.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
+    <EmbeddedResource Include="..\..\docs\manual.html" LogicalName="WinCapture.Resources.manual.html" />
+    <EmbeddedResource Include="..\..\THIRD_PARTY_NOTICES.txt" LogicalName="WinCapture.Resources.third-party-notices.txt" />
   </ItemGroup>
+
+  <!-- 图标既写进 exe 的 Win32 资源（资源管理器/任务栏），也作为 WPF 资源供窗口与托盘使用 -->
+  <ItemGroup>
+    <Resource Include="app.ico" />
+  </ItemGroup>
+
+  <!-- 单文件发布：清掉输出目录里除 exe 之外的残留（上次遗留的 .pdb / .xml 等），
+       保证 publish 目录里永远只有一个 WinCapture.exe。 -->
+  <Target Name="TrimSingleFileOutput" AfterTargets="Publish" Condition="'$(PublishSingleFile)' == 'true'">
+    <ItemGroup>
+      <_StraySingleFileOutput Include="$(PublishDir)**\*.*" Exclude="$(PublishDir)WinCapture.exe" />
+    </ItemGroup>
+    <Delete Files="@(_StraySingleFileOutput)" />
+  </Target>
 </Project>
